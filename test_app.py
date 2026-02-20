@@ -50,9 +50,10 @@ def test_successful_login(client):
     if b'csrf_token' in response.data:
         # Parse the HTML to find the CSRF token value
         import re
-        match = re.search(b'name="csrf_token"\s+type="hidden"\s+value="([^"]+)"', response.data)
-        if match:
-            csrf_token = match.group(1).decode('utf-8')
+        match = re.search(b'name="csrf_token"[^>]*value="([^"]+)"', response.data)
+        if not match:
+            raise AssertionError("CSRF token not found in login page")
+        csrf_token = match.group(1).decode('utf-8')
     
     # Login with CSRF token
     response = client.post('/login', data={
