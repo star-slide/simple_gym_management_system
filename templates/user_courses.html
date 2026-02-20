@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程列表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 95%;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .header-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .course-list-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .course-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 2em;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .course-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .course-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .course-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .meta-label {
+            font-weight: bold;
+            margin-right: 8px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .meta-value {
+            color: white;
+        }
+
+        .course-description {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .course-description.expanded {
+            -webkit-line-clamp: unset;
+        }
+        
+        .expand-btn {
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 5px;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 24px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            font-size: 1em;
+        }
+
+        .btn-primary {
+            background: rgba(46, 204, 113, 0.8);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: rgba(39, 174, 96, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-danger {
+            background: rgba(231, 76, 60, 0.8);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: rgba(192, 57, 43, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: rgba(149, 165, 166, 0.6);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(127, 140, 141, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 处理课程描述展开/折叠
+            document.querySelectorAll('.course-description-container').forEach(container => {
+                const desc = container.querySelector('.course-description');
+                const btn = container.querySelector('.expand-btn');
+                
+                // 检查是否需要显示展开按钮
+                if (desc.scrollHeight > desc.clientHeight) {
+                    btn.style.display = 'inline';
+                    btn.addEventListener('click', () => {
+                        desc.classList.toggle('expanded');
+                        btn.textContent = desc.classList.contains('expanded') ? '收起' : '展开';
+                    });
+                }
+            });
+
+            // 重置筛选条件
+            // 修复重置按钮功能
+                    const resetBtn = document.getElementById('reset-btn');
+                    if (resetBtn) {
+                        resetBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const form = document.querySelector('form[method="GET"]');
+                            if (form) {
+                                // 清空所有输入字段，包括日期字段
+                                form.querySelectorAll('input[type="text"], input[type="search"], input.date-input').forEach(input => {
+                                    input.value = '';
+                                });
+                                // 清除本地存储的日期值
+                                localStorage.removeItem('last_start_date');
+                                localStorage.removeItem('last_end_date');
+                                
+                                // 重定向并清除所有搜索参数
+                                const url = new URL(window.location.href);
+                                url.searchParams.set('search', '');
+                                url.searchParams.set('start_date', '');
+                                url.searchParams.set('end_date', '');
+                                // 保留排序参数
+                                if(url.searchParams.get('sort')) {
+                                    url.searchParams.set('sort', url.searchParams.get('sort'));
+                                }
+                                window.location.href = url.toString();
+                            }
+                        });
+                    }
+
+            // 处理预约表单提交
+            document.querySelectorAll('form[action*="book_course"]').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const courseCard = this.closest('.course-card');
+                    const statusDiv = courseCard.querySelector('div[style*="background-color"]');
+                    
+                    // 检查课程状态
+                    if (statusDiv && statusDiv.textContent.includes('进行中')) {
+                        e.preventDefault();
+                        const notification = document.getElementById('notification');
+                        notification.textContent = '课程正在进行，无法预约';
+                        notification.style.opacity = '1';
+                        setTimeout(() => {
+                            notification.style.opacity = '0';
+                        }, 3000);
+                        return;
+                    }
+
+                    // 显示预约中提示
+                    const notification = document.getElementById('notification');
+                    notification.textContent = '正在预约中...';
+                    notification.style.opacity = '1';
+
+                    // 使用fetch API提交表单
+                    e.preventDefault();
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: new FormData(this),
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            notification.textContent = '预约成功';
+                            notification.style.backgroundColor = 'rgba(46, 204, 113, 0.8)';
+                        } else {
+                            notification.textContent = data.message || '预约失败';
+                            notification.style.backgroundColor = 'rgba(231, 76, 60, 0.8)';
+                        }
+                        setTimeout(() => {
+                            notification.style.opacity = '0';
+                            if (data.success) {
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 500);
+                            }
+                        }, 3000);
+                    })
+                    .catch(error => {
+                        notification.textContent = '网络错误，请重试';
+                        notification.style.backgroundColor = 'rgba(231, 76, 60, 0.8)';
+                        setTimeout(() => {
+                            notification.style.opacity = '0';
+                        }, 3000);
+                    });
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="notification" class="btn btn-danger" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; opacity: 0; transition: opacity 0.3s ease; padding: 12px 24px;"></div>
+    <div class="container">
+        <div class="header-section">
+            <div class="header">
+                <h2 class="page-title">所有课程</h2>
+                <div class="header-buttons">
+                    <a href="{{ url_for('home') }}" class="nav-link">返回首页</a>
+                    <a href="{{ url_for('view_coaches') }}" class="nav-link">查看教练</a>
+                    <a href="{{ url_for('view_followed_coaches') }}" class="nav-link">我的关注</a>
+                    <a href="{{ url_for('my_bookings') }}" class="nav-link">我的预约</a>
+                </div>
+            </div>
+            <form method="GET" action="{{ url_for('courses')|escape }}" class="search-form">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <div class="status-filter" style="position: relative; display: inline-block;">
+                            <button id="status-filter-toggle" class="btn {% if status_filter == 'current' %}btn-primary{% elif status_filter == 'expired' %}btn-primary{% elif status_filter == 'all' %}btn-primary{% else %}btn-secondary{% endif %}" 
+                                    style="font-size: 16px; padding: 12px 24px; min-width: 120px;">
+                                {% if status_filter == 'current' %}当前课程
+                                {% elif status_filter == 'expired' %}失效课程
+                                {% elif status_filter == 'all' %}总课程
+                                {% else %}选择状态{% endif %}
+                            </button>
+                        <div id="status-filter-options" style="position: absolute; left: 0; top: 100%; display: none; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 8px; overflow: hidden; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <a href="?status=current" class="status-option btn {% if status_filter == 'current' %}btn-primary{% else %}btn-secondary{% endif %}" 
+                               style="display: block; width: 100%; text-align: left; border-radius: 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                当前课程
+                            </a>
+                            <a href="?status=expired" class="status-option btn {% if status_filter == 'expired' %}btn-primary{% else %}btn-secondary{% endif %}" 
+                               style="display: block; width: 100%; text-align: left; border-radius: 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                失效课程
+                            </a>
+                            <a href="?status=all" class="status-option btn {% if status_filter == 'all' %}btn-primary{% else %}btn-secondary{% endif %}" 
+                               style="display: block; width: 100%; text-align: left; border-radius: 0;">
+                                总课程
+                            </a>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 5px;">
+                        <input type="hidden" name="status" value="{{ request.args.get('status', 'current') }}">
+                        <input type="hidden" name="start_date" value="{{ request.args.get('start_date', '') }}">
+                        <input type="hidden" name="end_date" value="{{ request.args.get('end_date', '') }}">
+                        <button type="button" id="sort-btn" class="btn btn-secondary" 
+                                style="padding: 8px 12px; border-radius: 16px; min-width: 80px;">
+                            <span style="display: block; text-align: center;">
+                                {% if request.args.get('sort') == 'time_asc' %}升序{% else %}降序{% endif %}
+                            </span>
+                        </button>
+                    </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // 排序按钮点击处理
+                            const sortBtn = document.getElementById('sort-btn');
+                            if (sortBtn) {
+                                sortBtn.addEventListener('click', function() {
+                                    const currentSort = "{{ request.args.get('sort', 'time_desc') }}";
+                                    const newSort = currentSort === 'time_asc' ? 'time_desc' : 'time_asc';
+                                    updateUrlParam('sort', newSort);
+                                });
+                            }
+
+                            // 状态筛选菜单
+                            const toggleBtn = document.getElementById('status-filter-toggle');
+                            const optionsMenu = document.getElementById('status-filter-options');
+                            
+                            if (toggleBtn && optionsMenu) {
+                                toggleBtn.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    optionsMenu.style.display = optionsMenu.style.display === 'block' ? 'none' : 'block';
+                                });
+                                
+                                document.addEventListener('click', function(e) {
+                                    if (!toggleBtn.contains(e.target) && !optionsMenu.contains(e.target)) {
+                                        optionsMenu.style.display = 'none';
+                                    }
+                                });
+                                
+                                optionsMenu.addEventListener('click', function(e) {
+                                    e.stopPropagation();
+                                });
+                            }
+
+                            // 更新URL参数
+                            function updateUrlParam(param, value) {
+                                const url = new URL(window.location.href);
+                                url.searchParams.set(param, value);
+                                window.location.href = url.toString();
+                            }
+                        });
+                    </script>
+
+                            <!-- 调试输出 -->
+                            <div style="display: flex; justify-content: flex-end; align-items: center; flex-grow: 1;">
+                        <form method="GET" action="{{ url_for('courses') }}" style="display: flex; gap: 10px; align-items: center;">
+                            <input type="hidden" name="sort" value="{{ request.args.get('sort', 'time_desc') }}">
+                            <input type="hidden" name="status" value="{{ request.args.get('status', 'current') }}">
+                            <input type="hidden" name="current_status" value="{{ request.args.get('status', 'current') }}">
+                            <input type="text" name="search" placeholder="搜索课程名称或讲师..." 
+                                   value="{{ request.args.get('search', '')|escape }}"
+                                   style="padding: 10px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); 
+                                   width: 300px; background: rgba(255,255,255,0.1); 
+                                   backdrop-filter: blur(5px); color: white;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 10px; width: 350px;">
+                                    <input type="text" name="start_date" value="{{ request.args.get('start_date', '') }}" 
+                                           class="date-input" style="width: 150px; padding: 10px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.2);
+                                           background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); color: white; flex-shrink: 0;"
+                                           placeholder="开始日期" readonly
+                                           onclick="showDatePicker(this)">
+                                    <span>至</span>
+                                    <input type="text" name="end_date" value="{{ request.args.get('end_date', '') }}"
+                                           class="date-input" style="width: 150px; padding: 10px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.2);
+                                           background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); color: white; flex-shrink: 0;"
+                                           placeholder="结束日期" readonly
+                                           onclick="showDatePicker(this)">
+                                </div>
+                                <script>
+                                    function showDatePicker(input) {
+                                        // 移除readonly属性
+                                        input.removeAttribute('readonly');
+                                        input.type = 'date';
+                                        input.focus();
+                                        
+                                        // 改进blur事件处理
+                                        input.addEventListener('change', function() {
+                                            if(this.value) {
+                                                const date = new Date(this.value);
+                                                if (!isNaN(date)) {
+                                                    const year = date.getFullYear();
+                                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                    const day = String(date.getDate()).padStart(2, '0');
+                                                    this.value = `${year}-${month}-${day}`;
+                                                }
+                                            }
+                                            // 保留为date类型以便再次选择
+                                            this.type = 'text';
+                                        });
+                                    }
+                                    
+                                    // 初始化时设置日期值 - 带调试日志
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        console.log('[DEBUG] 初始化日期输入框');
+                                        
+                                        const startDate = "{{ request.args.get('start_date', '') }}";
+                                        const endDate = "{{ request.args.get('end_date', '') }}";
+                                        
+                                        console.log('[DEBUG] 从URL获取的日期参数:', {startDate, endDate});
+                                        
+                                        const startInput = document.querySelector('input[name="start_date"]');
+                                        const endInput = document.querySelector('input[name="end_date"]');
+                                        
+                                        if (!startInput || !endInput) {
+                                            console.error('[ERROR] 找不到日期输入框元素');
+                                            return;
+                                        }
+                                        
+                                        // 确保日期格式正确
+                                        function formatDateForInput(dateStr) {
+                                            if (!dateStr) return '';
+                                            
+                                            try {
+                                                const date = new Date(dateStr);
+                                                if (isNaN(date)) {
+                                                    console.warn('[WARN] 无效的日期格式:', dateStr);
+                                                    return '';
+                                                }
+                                                
+                                                const year = date.getFullYear();
+                                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                const day = String(date.getDate()).padStart(2, '0');
+                                                return `${year}-${month}-${day}`;
+                                            } catch (e) {
+                                                console.error('[ERROR] 日期格式化错误:', e);
+                                                return '';
+                                            }
+                                        }
+                                        
+                                        const formattedStart = formatDateForInput(startDate);
+                                        const formattedEnd = formatDateForInput(endDate);
+                                        
+                                        console.log('[DEBUG] 格式化后的日期:', {formattedStart, formattedEnd});
+                                        
+                                        if(formattedStart) {
+                                            startInput.value = formattedStart;
+                                            console.log('[DEBUG] 已设置开始日期:', formattedStart);
+                                        }
+                                        if(formattedEnd) {
+                                            endInput.value = formattedEnd;
+                                            console.log('[DEBUG] 已设置结束日期:', formattedEnd);
+                                        }
+                                    });
+                                </script>
+                                <script>
+                                    function formatDateInput(input) {
+                                        if (input.value && input.type === 'date') {
+                                            const date = new Date(input.value);
+                                            if (!isNaN(date)) {
+                                                const year = date.getFullYear();
+                                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                const day = String(date.getDate()).padStart(2, '0');
+                                                input.value = `${year}-${month}-${day}`;
+                                            }
+                                        }
+                                        input.type = 'text';
+                                    }
+
+                                    // 表单提交处理 - 确保日期参数被正确包含
+                                    document.querySelector('form[method="GET"]').addEventListener('submit', function(e) {
+                                        // 确保日期输入框的值格式正确
+                                        const startDateInput = document.querySelector('input[name="start_date"]');
+                                        const endDateInput = document.querySelector('input[name="end_date"]');
+                                        
+                                        if(startDateInput.value && !isValidDate(startDateInput.value)) {
+                                            alert('请输入有效的开始日期');
+                                            e.preventDefault();
+                                            return;
+                                        }
+                                        
+                                        if(endDateInput.value && !isValidDate(endDateInput.value)) {
+                                            alert('请输入有效的结束日期');
+                                            e.preventDefault();
+                                            return;
+                                        }
+                                    });
+                                    
+                                    // 验证日期格式
+                                    function isValidDate(dateString) {
+                                        const regEx = /^\d{4}-\d{2}-\d{2}$/;
+                                        if(!dateString.match(regEx)) return false;
+                                        const d = new Date(dateString);
+                                        return d instanceof Date && !isNaN(d);
+                                    }
+
+                                    // 日期输入框处理
+                                    function initDateInputs() {
+                                        const urlParams = new URLSearchParams(window.location.search);
+                                        const startDate = urlParams.get('start_date');
+                                        const endDate = urlParams.get('end_date');
+                                        
+                                        const startInput = document.querySelector('input[name="start_date"]');
+                                        const endInput = document.querySelector('input[name="end_date"]');
+                                        
+                                        if (startInput && endInput) {
+                                            // 优先使用URL参数，其次使用本地存储的值
+                                            startInput.value = startDate || localStorage.getItem('last_start_date') || '';
+                                            endInput.value = endDate || localStorage.getItem('last_end_date') || '';
+                                            
+                                            // 保存当前值到本地存储
+                                            if (startDate) localStorage.setItem('last_start_date', startDate);
+                                            if (endDate) localStorage.setItem('last_end_date', endDate);
+                                        }
+                                    }
+
+                                    // 初始化日期输入框
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        initDateInputs();
+                                        
+                                        // 表单提交处理
+                                        document.querySelector('form[method="GET"]')?.addEventListener('submit', function(e) {
+                                            // 确保所有参数都被包含
+                                            const formData = new FormData(this);
+                                            const params = new URLSearchParams();
+                                            
+                                            // 构建完整URL参数
+                                            const allParams = new URLSearchParams();
+                                            
+                                            // 1. 添加表单参数
+                                            for (const [key, value] of formData.entries()) {
+                                                if (value) allParams.set(key, value);
+                                            }
+                                            
+                                            // 2. 添加当前URL中的重要参数(确保不被覆盖)
+                                            const currentParams = new URLSearchParams(window.location.search);
+                                            ['status', 'sort', 'current_status'].forEach(key => {
+                                                if (currentParams.has(key) && !allParams.has(key)) {
+                                                    allParams.set(key, currentParams.get(key));
+                                                }
+                                            });
+                                            
+                                            // 阻止默认提交，使用新参数跳转
+                                            e.preventDefault();
+                                            window.location.href = `${this.action}?${allParams.toString()}`;
+                                        });
+                                    });
+                                </script>
+                            </div>
+                            <button type="submit" class="btn btn-primary">搜索</button>
+                            <button type="button" id="reset-btn" class="btn btn-secondary">重置</button>
+                        </form>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 课程列表区域 -->
+        <div class="course-list-section">
+            {% if courses %}
+                {% for course in courses %}
+                <div class="course-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <h3 class="course-title">{{ course.name }}</h3>
+                    </div>
+                    <div style="padding: 5px 10px; border-radius: 12px; font-size: 0.8em; 
+                        {% if course.is_deleted %}background-color: rgba(231, 76, 60, 0.2); color: #e74c3c;
+                        {% elif course.status == 'ongoing' %}background-color: rgba(241, 196, 15, 0.2); color: #f1c40f;
+                        {% elif course.status == 'expired' %}background-color: rgba(231, 76, 60, 0.2); color: #e74c3c;
+                        {% else %}background-color: rgba(46, 204, 113, 0.2); color: #2ecc71;{% endif %}">
+                        {% if course.is_deleted %}被管理员删除
+                        {% elif course.status == 'ongoing' %}进行中
+                        {% elif course.status == 'expired' %}已过期
+                        {% else %}未开始{% endif %}
+                    </div>
+                </div>
+                
+                <div class="course-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">讲师:</span>
+                        <span class="meta-value">{{ course.instructor }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">时间:</span>
+                        <span class="meta-value">{{ course.schedule.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">时长:</span>
+                        <span class="meta-value">{{ course.duration }}分钟</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">剩余名额:</span>
+                        <span class="meta-value">{{ course.capacity - course.bookings|selectattr('status','equalto','confirmed')|list|length }}/{{ course.capacity }}</span>
+                    </div>
+                </div>
+                
+                <div class="course-description-container">
+                    <p class="course-description">{{ course.description }}</p>
+                    <button class="expand-btn" style="display:none">展开</button>
+                </div>
+                
+                {% if (not status_filter or status_filter == 'current') and course.status in ['pending', 'ongoing'] %}
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
+                    {% if course.id in user_booked_courses %}
+                    <span style="display: inline-flex; align-items: center; background-color: rgba(46, 204, 113, 0.2); 
+                          padding: 2px 8px; border-radius: 12px; font-size: 0.8em; color: #2ecc71;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px;">
+                            <path d="M20 6L9 17l-5-5" stroke="#2ecc71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        已预约
+                    </span>
+                    {% endif %}
+                    <form action="{{ url_for('book_course', course_id=course.id) }}" method="POST" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-primary">预约课程</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="course-card">
+                <p>暂无课程数据</p>
+            </div>
+        {% endif %}
+        <!-- 分页导航 -->
+        <div style="margin-top: 30px; display: flex; justify-content: center;">
+            {% if pagination.pages > 1 %}
+                <div style="display: flex; gap: 10px;">
+                    {% if pagination.has_prev %}
+                        <a href="{{ url_for('courses', 
+                            page=pagination.prev_num, 
+                            sort=request.args.get('sort'),
+                            status=request.args.get('status'),
+                            search=request.args.get('search'),
+                            start_date=request.args.get('start_date'),
+                            end_date=request.args.get('end_date')) }}" 
+                           class="btn btn-secondary">
+                            上一页
+                        </a>
+                    {% endif %}
+                    
+                    {% for page_num in pagination.iter_pages() %}
+                        {% if page_num %}
+                            <a href="{{ url_for('courses', 
+                                page=page_num, 
+                                sort=request.args.get('sort'),
+                                status=request.args.get('status'),
+                                search=request.args.get('search'),
+                                start_date=request.args.get('start_date'),
+                                end_date=request.args.get('end_date')) }}" 
+                               class="btn {% if page_num == pagination.page %}btn-primary{% else %}btn-secondary{% endif %}">
+                                {{ page_num }}
+                            </a>
+                        {% else %}
+                            <span class="btn btn-secondary">...</span>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                        <a href="{{ url_for('courses', 
+                            page=pagination.next_num, 
+                            sort=request.args.get('sort'),
+                            status=request.args.get('status'),
+                            search=request.args.get('search'),
+                            start_date=request.args.get('start_date'),
+                            end_date=request.args.get('end_date')) }}" 
+                           class="btn btn-secondary">
+                            下一页
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

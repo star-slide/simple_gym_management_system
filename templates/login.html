@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录 - 健身中心</title>
+    <style>
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* 全屏背景图 */
+        body {
+            min-height: 100vh;
+            padding: 20px 0;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                        url('/static/images/login.webp') center/cover;
+            position: relative;
+        }
+
+        /* 登录容器 */
+        .form-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* Internet Explorer and Edge */
+            scrollbar-gutter: stable; /* Modern browsers */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+
+        /* 标题样式匹配主页 */
+        h2 {
+            color: white;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        /* 表单字段统一样式 - 优化对齐 */
+        .form-group {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            width:90%; /* 确保撑满容器 */
+            align-items: flex-start;
+        }
+
+        label {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 16px;
+            padding-left: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 28px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+            cursor: none;
+        }
+
+        /* 确保表单容器居中 */
+        .form-container {
+            width: 380px;
+            padding: 40px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #00a8ff;
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* 按钮样式匹配主页 */
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #00a8ff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #0097e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,168,255,0.4);
+        }
+
+        /* 消息提示样式优化 */
+        .alert {
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px solid;
+        }
+
+        .success {
+            background: rgba(135, 218, 135, 0.9);
+            border-color: #79c079;
+        }
+
+        .danger {
+            background: rgba(255, 175, 175, 0.9);
+            border-color: #ff7979;
+        }
+
+        /* 底部链接适配 */
+        .links {
+            text-align: center;
+            margin-top: 25px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .links a {
+            color: #00a8ff;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+
+        .links a:hover {
+            color: #00c3ff;
+            text-shadow: 0 0 15px rgba(0, 200, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>登录</h2>
+        
+        <!-- 消息提示 -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- 登录表单 -->
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> 
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" name="password" required>
+            </div>
+
+            <button type="submit">登 录</button>
+        </form>
+
+        <!-- 忘记密码提示 -->
+        <div id="forgotPasswordAlert" class="alert danger" style="display:none;">
+            <span class="close-btn" onclick="this.parentElement.style.display='none'">×</span>
+            请联系管理员重置密码
+        </div>
+
+        <!-- 底部链接 -->
+        <div class="links">
+            <p>
+                <a href="{{ url_for('register') }}">注册新账号</a> |
+                <a href="{{ url_for('welcome') }}">返回主页</a> |
+                <a href="#" onclick="showAlert()">忘记密码</a>
+            </p>
+        </div>
+
+        <script>
+
+                // 监听新增元素
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.style) {
+                                node.style.cursor = 'none';
+                                node.style.caretColor = 'transparent';
+                            }
+                            if (node.querySelectorAll) {
+                                node.querySelectorAll('*').forEach(function(el) {
+                                    el.style.cursor = 'none';
+                                    el.style.caretColor = 'transparent';
+                                });
+                            }
+                        });
+                    });
+                });
+
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+
+                // 更可靠的提示框控制
+                const passwordAlert = {
+                init: function() {
+                    this.alert = document.getElementById('forgotPasswordAlert');
+                    this.bindEvents();
+                },
+                bindEvents: function() {
+                    // 忘记密码按钮
+                    document.querySelector('.links a[onclick]').onclick = (e) => {
+                        e.preventDefault();
+                        this.show();
+                    };
+                    
+                    // 关闭按钮
+                    this.alert.querySelector('.close-btn').onclick = (e) => {
+                        e.preventDefault();
+                        this.hide();
+                    };
+                    
+                    // 点击外部关闭
+                    document.addEventListener('click', (e) => {
+                        if (this.isVisible() && 
+                            !e.target.closest('#forgotPasswordAlert') && 
+                            !e.target.closest('.links a[onclick]')) {
+                            this.hide();
+                        }
+                    });
+                },
+                show: function() {
+                    this.alert.style.display = 'block';
+                },
+                hide: function() {
+                    this.alert.style.display = 'none';
+                },
+                isVisible: function() {
+                    return this.alert.style.display === 'block';
+                }
+            };
+            
+            // 初始化
+            document.addEventListener('DOMContentLoaded', () => passwordAlert.init());
+        </script>
+    </div>
+</body>
+</html>

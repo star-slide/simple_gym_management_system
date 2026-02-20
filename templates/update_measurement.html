@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更新体测数据 - 健身中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        .checkmark {
+            color: #28a745;
+            margin-left: 10px;
+            font-size: 1.2em;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* 反馈消息样式 */
+        .feedback-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            max-width: 80%;
+        }
+
+        .feedback-message.show {
+            opacity: 1;
+        }
+
+        .feedback-message.success {
+            background: rgba(0, 168, 255, 0.9);
+        }
+
+        .feedback-message.error {
+            background: rgba(255, 0, 0, 0.9);
+        }
+
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            padding: 30px;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .btn-submit {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #00a8ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #0097e6;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>更新{% if type == 'latest' %}最近{% else %}最初{% endif %}体测数据</h1>
+        
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="form-group">
+                <label for="height">身高 (cm)</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="number" step="0.1" id="height" name="height" 
+                           value="{{ current_data.height if current_data else '' }}" required>
+                    {% if goal_data and current_data and goal_data.min_height <= current_data.height <= goal_data.max_height %}
+                    <span class="checkmark">✓</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="weight">体重 (kg)</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="number" step="0.1" id="weight" name="weight" 
+                           value="{{ current_data.weight if current_data else '' }}" required>
+                    {% if goal_data and current_data and goal_data.min_weight <= current_data.weight <= goal_data.max_weight %}
+                    <span class="checkmark">✓</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="body_fat">体脂率 (%)</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="number" step="0.1" id="body_fat" name="body_fat" 
+                           value="{{ current_data.body_fat if current_data else '' }}" required>
+                    {% if goal_data and current_data and goal_data.min_body_fat <= current_data.body_fat <= goal_data.max_body_fat %}
+                    <span class="checkmark">✓</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="muscle_mass">肌肉量 (kg)</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="number" step="0.1" id="muscle_mass" name="muscle_mass" 
+                           value="{{ current_data.muscle_mass if current_data else '' }}" required>
+                    {% if goal_data and current_data and goal_data.min_muscle_mass <= current_data.muscle_mass <= goal_data.max_muscle_mass %}
+                    <span class="checkmark">✓</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-submit">保存数据</button>
+        </form>
+        
+        <a href="{{ url_for('home') }}" class="back-link">← 返回首页</a>
+    </div>
+
+    <!-- 反馈消息区域 -->
+    <div id="feedbackMessage" class="feedback-message"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+            
+            const form = document.querySelector('form');
+            if(form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // 阻止表单默认提交
+                    console.log('Form submission intercepted');
+                    
+                    // 收集表单数据
+                    const formData = new FormData(form);
+                    
+                    // 显示加载状态
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '保存中...';
+                    
+                    // 发送AJAX请求
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // 恢复按钮状态
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                        
+                        // 显示反馈消息
+                        if(data.success) {
+                            showFeedbackMessage(data.message, 'success');
+                            // 更新表单数据
+                            if(data.updated_data) {
+                                for(const field in data.updated_data) {
+                                    const input = form.querySelector(`[name="${field}"]`);
+                                    if(input) {
+                                        input.value = data.updated_data[field];
+                                    }
+                                }
+                            }
+                        } else {
+                            showFeedbackMessage(data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                        showFeedbackMessage('请求失败，请重试', 'error');
+                    });
+                });
+            }
+        });
+
+        function showFeedbackMessage(message, type) {
+            console.log('Showing feedback:', message, type);
+            const feedbackEl = document.getElementById('feedbackMessage');
+            if(feedbackEl) {
+                feedbackEl.textContent = message;
+                feedbackEl.className = 'feedback-message';
+                feedbackEl.classList.add(type === 'error' ? 'error' : 'success');
+                feedbackEl.classList.add('show');
+                
+                // 3秒后自动隐藏
+                setTimeout(() => {
+                    feedbackEl.classList.remove('show');
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>

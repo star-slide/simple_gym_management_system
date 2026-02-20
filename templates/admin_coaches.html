@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教练管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+        }
+
+        body {                  
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            background-size: cover;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 95%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 2em;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .coaches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .coach-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .coach-actions {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+            padding-left: 20px;
+            border-left: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .coach-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .coach-content {
+            flex: 1;
+        }
+
+        .coach-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .coach-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .coach-name {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .coach-age {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9em;
+        }
+
+        .coach-details {
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            margin-bottom: 10px;
+            display: flex;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            margin-right: 10px;
+            color: rgba(255,255,255,0.8);
+            min-width: 80px;
+        }
+
+        .detail-value {
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+            max-width: 200px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 24px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: #00a8ff;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0097e6;
+        }
+        
+        .btn-success {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+        
+        .btn-success:hover {
+            background-color: #3e8e41;
+        }
+
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+
+        .btn-edit {
+            background-color:rgb(0, 162, 255);
+            color: #212529;
+        }
+
+        .btn-edit:hover {
+            background-color:rgb(0, 141, 222);
+        }
+
+        .no-coaches {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.7);
+        }
+    </style>
+    <!-- 删除确认模态框 -->
+    <div id="deleteModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div style="background-color: rgba(255,255,255,0.1); margin: 15% auto; padding: 20px; border-radius: 10px; width: 400px; max-width: 80%; backdrop-filter: blur(10px);">
+            <h3 style="color: white; margin-bottom: 20px;">确认删除</h3>
+            <p style="color: rgba(255,255,255,0.8); margin-bottom: 30px;">确定要删除这位教练吗？</p>
+            <div style="display: flex; justify-content: flex-end; gap: 15px;">
+                <button onclick="hideDeleteModal()" class="btn btn-secondary" style="padding: 8px 16px;">取消</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger" style="padding: 8px 16px;">确认删除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时处理flash消息 - 只显示delete分类
+        document.addEventListener('DOMContentLoaded', function() {
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'delete' %}
+                            showFlashMessage('{{ message }}', '{{ category }}');
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        });
+
+        function showDeleteModal(coachId) {
+            const form = document.getElementById('deleteForm');
+            form.action = `/delete_coach/${coachId}`;
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        // 显示flash消息并3秒后自动关闭
+        function showFlashMessage(message, category) {
+            try {
+                const flashDiv = document.getElementById('flash-message');
+                const flashText = document.getElementById('flash-text');
+                
+                if (!flashDiv || !flashText) return;
+                
+                flashText.textContent = message;
+                flashDiv.style.display = 'block';
+                
+                // 根据消息类型设置样式
+                if (category === 'success') {
+                    flashDiv.firstElementChild.style.backgroundColor = 'rgba(76, 175, 80, 0.9)';
+                } else if (category === 'error') {
+                    flashDiv.firstElementChild.style.backgroundColor = 'rgba(244, 67, 54, 0.9)';
+                }
+                
+                // 3秒后自动关闭
+                setTimeout(() => {
+                    flashDiv.style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                console.error('Flash消息显示错误:', error);
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Flash消息提示 -->
+    <div id="flash-message" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: none;">
+        <div style="background: rgba(0,0,0,0.7); color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 300px; text-align: center;">
+            <span id="flash-text"></span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="page-title">教练管理</h1>
+            <div style="display: flex; gap: 15px;">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-success">返回</a>
+                <a href="{{ url_for('add_coach') }}" class="btn btn-primary">添加新教练</a>
+            </div>
+        </div>
+
+        {% if coaches %}
+        <div class="coaches-grid">
+            {% for coach in coaches %}
+                <div class="coach-card">
+                    <div class="coach-content">
+                        <div class="coach-header">
+                    {% if coach.image_url %}
+                    <img src="{{ coach.image_url }}" alt="{{ coach.name }}" class="coach-image">
+                    {% else %}
+                    <div class="coach-image" style="background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+                        <span>暂无照片</span>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <div class="coach-name">{{ coach.name }}</div>
+                        <div class="coach-age">{{ coach.age if coach.age else '年龄未填写' }}</div>
+                    </div>
+                        </div>
+                        <div class="coach-details">
+                    <div class="detail-item">
+                        <span class="detail-label">擅长方向:</span>
+                        <span class="detail-value">{{ coach.specialty if coach.specialty else '未填写' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">个人介绍:</span>
+                        <span class="detail-value">{{ coach.description if coach.description else '未填写' }}</span>
+                        </div>
+                    </div>
+                    <div class="coach-actions">
+                        <a href="{{ url_for('edit_coach', coach_id=coach.id) }}" class="btn btn-edit" style="padding: 8px 12px;">编辑</a>
+                        <button type="button" class="btn btn-danger" style="padding: 8px 12px;" 
+                                onclick="showDeleteModal({{ coach.id }})">删除</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-coaches">
+            <p>暂无教练数据</p>
+        </div>
+        {% endif %}
+    </div>
+    <!-- ==================== -->
+    <!-- 最终版Flash消息系统 -->
+    <!-- ==================== -->
+    <div id="ultimate-flash" style="display:none;">
+        <div class="ultimate-flash-box">
+            <div class="ultimate-flash-content"></div>
+        </div>
+    </div>
+
+    <style>
+        /* 最终版Flash消息样式 */
+        .ultimate-flash-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            pointer-events: none;
+        }
+        
+        .ultimate-flash-content {
+            background: rgba(20,20,20,0.95);
+            color: #fff;
+            padding: 16px 32px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+            min-width: 320px;
+            max-width: 90vw;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .ultimate-flash-success {
+            background: rgba(46, 125, 50, 0.97) !important;
+        }
+        
+        .ultimate-flash-error {
+            background: rgba(211, 47, 47, 0.97) !important;
+        }
+    </style>
+
+    <script>
+        // 显示删除确认模态框
+        function showDeleteModal(coachId) {
+            const modal = document.getElementById('deleteModal');
+            const form = document.getElementById('deleteForm');
+            
+            // 设置表单action
+            form.action = `/delete_coach/${coachId}`;
+            
+            // 显示模态框
+            modal.style.display = 'block';
+        }
+
+        // 隐藏删除确认模态框
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        // 最终版Flash消息显示函数
+        function displayFlash(message, type) {
+            const flashBox = document.querySelector('.ultimate-flash-box');
+            const content = document.querySelector('.ultimate-flash-content');
+            
+            if (!flashBox || !content) return;
+            
+            // 设置消息内容
+            content.textContent = message;
+            content.className = 'ultimate-flash-content';
+            
+            // 设置消息类型样式
+            if (type === 'success') {
+                content.classList.add('ultimate-flash-success');
+            } else if (type === 'error') {
+                content.classList.add('ultimate-flash-error');
+            }
+            
+            // 显示消息
+            flashBox.style.display = 'block';
+            setTimeout(() => {
+                flashBox.style.opacity = 1;
+                flashBox.style.top = '20px';
+            }, 10);
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                flashBox.style.opacity = 0;
+                flashBox.style.top = '10px';
+                setTimeout(() => {
+                    flashBox.style.display = 'none';
+                }, 400);
+            }, 3000);
+        }
+
+        // 替换原有showFlashMessage函数
+        function showFlashMessage(message, category) {
+            displayFlash(message, category);
+        }
+    </script>
+</body>
+</html>

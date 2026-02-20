@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑课程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .page-title {
+            font-size: 2em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: rgba(46, 204, 113, 0.8);
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.3);
+            background: rgba(255,255,255,0.15);
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 24px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            font-size: 1em;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: rgba(46, 204, 113, 0.8);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: rgba(39, 174, 96, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .alert-success {
+            background: rgba(46, 204, 113, 0.2);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(46, 204, 113, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="notification" class="btn btn-danger" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; opacity: 0; transition: opacity 0.3s ease; padding: 12px 24px;"></div>
+    <div class="container">
+        <h1 class="page-title">编辑课程</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}" 
+                         style="margin-bottom: 20px; padding: 15px; border-radius: 8px; 
+                                background-color: {% if category == 'success' %}rgba(46, 204, 113, 0.2){% else %}rgba(231, 76, 60, 0.2){% endif %};
+                                border: 1px solid {% if category == 'success' %}rgba(46, 204, 113, 0.5){% else %}rgba(231, 76, 60, 0.5){% endif %};
+                                color: white;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="form-card">
+            <form method="POST" action="{{ url_for('edit_course', course_id=course.id) }}" id="editForm" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="form-group">
+                    <label for="name" class="form-label">课程名称</label>
+                    <input type="text" class="form-control" id="name" name="name" 
+                           value="{{ course.name }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="instructor" class="form-label">教练姓名</label>
+                    <input type="text" class="form-control" id="instructor" name="instructor"
+                           value="{{ course.instructor }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="schedule" class="form-label">课程时间</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="date" class="form-control" id="date" name="date" 
+                               value="{{ schedule_date }}" required style="flex: 1;">
+                        <input type="time" class="form-control" id="time" name="time" 
+                               value="{{ schedule_time }}" required style="flex: 1;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="duration" class="form-label">课程时长(分钟)</label>
+                    <input type="number" class="form-control" id="duration" name="duration"
+                           value="{{ course.duration }}" required min="1" max="240">
+                </div>
+
+                <div class="form-group">
+                    <label for="capacity" class="form-label">课程容量</label>
+                    <input type="number" class="form-control" id="capacity" name="capacity"
+                           value="{{ course.capacity }}" required min="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="description" class="form-label">课程描述</label>
+                    <textarea class="form-control" id="description" name="description" 
+                              rows="5" required>{{ course.description }}</textarea>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary">保存更改</button>
+                    <a href="{{ url_for('courses') }}" class="btn btn-secondary">返回</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            const name = document.getElementById('name').value;
+            const instructor = document.getElementById('instructor').value;
+            const schedule = document.getElementById('schedule').value;
+            const duration = document.getElementById('duration').value;
+            
+            if (!name || !instructor || !schedule || !duration) {
+                e.preventDefault();
+                alert('请填写所有必填字段');
+                return false;
+            }
+            
+            const selectedDate = new Date(schedule);
+            const now = new Date();
+            
+            if (selectedDate <= now) {
+                e.preventDefault();
+                alert('课程时间必须晚于当前时间');
+                return false;
+            }
+            
+            return true;
+        });
+    </script>
+</body>
+</html>

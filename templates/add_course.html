@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加课程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-title {
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #00a8ff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 1em;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #00a8ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0097e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 168, 255, 0.4);
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-right: 15px;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .datetime-input {
+            display: flex;
+            gap: 15px;
+        }
+
+        .datetime-input input {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="notification" class="btn btn-danger" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; opacity: 0; transition: opacity 0.3s ease; padding: 12px 24px;"></div>
+    <div class="form-container">
+        <div class="form-header">
+            <h1 class="form-title">添加新课程</h1>
+            <p>请填写课程详细信息</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('add_course') }}" id="courseForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label for="name" class="form-label">课程名称</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="instructor" class="form-label">教练姓名</label>
+                <input type="text" class="form-control" id="instructor" name="instructor" required>
+            </div>
+
+            <div class="form-group">
+                <label for="schedule" class="form-label">课程时间</label>
+                <div class="datetime-input">
+                    <input type="date" class="form-control" id="date" name="date" required>
+                    <input type="time" class="form-control" id="time" name="time" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="duration" class="form-label">课程时长(分钟)</label>
+                <input type="number" class="form-control" id="duration" name="duration" min="0" max="240" required>
+            </div>
+
+            <div class="form-group">
+                <label for="capacity" class="form-label">课程人数限制</label>
+                <input type="number" class="form-control" id="capacity" name="capacity" min="1" max="100" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label">课程描述</label>
+                <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-back">返回</a>
+                <a href="{{ url_for('courses') }}" class="btn btn-info" style="background-color: #17a2b8; margin-right: 15px;">查看所有课程</a>
+                <button type="submit" class="btn btn-primary">保存课程</button>
+            </div>
+        </form>
+
+        <script>
+            document.getElementById('courseForm').addEventListener('submit', function(e) {
+                const dateInput = document.getElementById('date');
+                const timeInput = document.getElementById('time');
+                
+                // 获取输入的日期和时间
+                const selectedDate = new Date(dateInput.value);
+                const selectedTime = timeInput.value.split(':');
+                
+                // 设置时间为用户选择的时间
+                selectedDate.setHours(parseInt(selectedTime[0]));
+                selectedDate.setMinutes(parseInt(selectedTime[1]));
+                
+                // 获取当前时间
+                const now = new Date();
+                
+                // 验证课程时间是否在当前时间之后
+                if (selectedDate <= now) {
+                    e.preventDefault();
+                    const notification = document.getElementById('notification');
+                    notification.textContent = '课程时间必须晚于当前时间！';
+                    notification.style.opacity = '1';
+                    setTimeout(() => {
+                        notification.style.opacity = '0';
+                    }, 3000);
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // 从URL参数中检查是否有保存成功的标志
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.has('saved')) {
+                const notification = document.getElementById('notification');
+                if(urlParams.get('saved') === 'true') {
+                    notification.textContent = '课程保存成功！';
+                    notification.style.backgroundColor = 'rgba(46, 204, 113, 0.8)';
+                    notification.style.opacity = '1';
+                    setTimeout(() => {
+                        notification.style.opacity = '0';
+                    }, 3000);
+                    // 清空表单
+                    document.getElementById('courseForm').reset();
+                } else {
+                    notification.textContent = '课程保存失败，请重试！';
+                    notification.style.backgroundColor = 'rgba(231, 76, 60, 0.8)';
+                    notification.style.opacity = '1';
+                    setTimeout(() => {
+                        notification.style.opacity = '0';
+                    }, 3000);
+                }
+            }
+        </script>
+    </div>
+</body>
+</html>

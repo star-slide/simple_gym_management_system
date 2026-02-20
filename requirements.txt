@@ -1,0 +1,8 @@
+flask
+flask-sqlalchemy
+python-dotenv
+flask-wtf
+werkzeug
+dotenv
+objgraph
+source py-project-env system_works

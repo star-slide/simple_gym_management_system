@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加教练</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-title {
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #00a8ff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 1em;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #00a8ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0097e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 168, 255, 0.4);
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-right: 15px;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .file-upload {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-upload-label {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload-label:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .file-name {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <!-- Flash消息提示 -->
+    <div id="flash-message" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: none;">
+        <div style="background: rgba(0,0,0,0.7); color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 300px; text-align: center;">
+            <span id="flash-text"></span>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-header">
+            <h1 class="form-title">添加新教练</h1>
+            <p>请填写教练详细信息</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('add_coach') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label for="name" class="form-label">教练姓名</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="age" class="form-label">年龄</label>
+                <input type="number" class="form-control" id="age" name="age" min="18" max="80">
+            </div>
+
+            <div class="form-group">
+                <label for="specialty" class="form-label">擅长方向</label>
+                <input type="text" class="form-control" id="specialty" name="specialty">
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label">个人介绍</label>
+                <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">教练照片</label>
+                <div class="file-upload">
+                    <label for="image" class="file-upload-label">选择文件</label>
+                    <span class="file-name" id="fileName">未选择文件</span>
+                    <input type="file" class="form-control" id="image" name="image" style="display: none;" accept="image/*">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('admin_coaches') }}" class="btn btn-back">返回</a>
+                <button type="submit" class="btn btn-primary">保存教练信息</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // 显示选择的文件名
+        document.getElementById('image').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : '未选择文件';
+            document.getElementById('fileName').textContent = fileName;
+        });
+
+        // 页面加载时处理flash消息
+        document.addEventListener('DOMContentLoaded', function() {
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        showFlashMessage('{{ message }}', '{{ category }}');
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        });
+
+        // 显示flash消息并3秒后自动关闭
+        function showFlashMessage(message, category) {
+            const flashDiv = document.getElementById('flash-message');
+            const flashText = document.getElementById('flash-text');
+            
+            flashText.textContent = message;
+            flashDiv.style.display = 'block';
+            
+            // 根据消息类型设置样式
+            if(category === 'success') {
+                flashDiv.firstElementChild.style.backgroundColor = 'rgba(76, 175, 80, 0.9)';
+            } else if(category === 'error') {
+                flashDiv.firstElementChild.style.backgroundColor = 'rgba(244, 67, 54, 0.9)';
+            }
+            
+            // 3秒后自动关闭
+            setTimeout(() => {
+                flashDiv.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

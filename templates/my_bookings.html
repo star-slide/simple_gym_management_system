@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的预约</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 2em;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .booking-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .booking-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .booking-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .booking-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .meta-label {
+            font-weight: bold;
+            margin-right: 8px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .meta-value {
+            color: white;
+        }
+
+        .course-description {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .course-description.expanded {
+            -webkit-line-clamp: unset;
+        }
+        
+        .expand-btn {
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 5px;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 24px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            font-size: 1em;
+        }
+
+        .btn-primary {
+            background: rgba(46, 204, 113, 0.8);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: rgba(39, 174, 96, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-danger {
+            background: rgba(231, 76, 60, 0.8);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: rgba(192, 57, 43, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .booking-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .no-bookings {
+            text-align: center;
+            padding: 40px 0;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 处理课程描述展开/折叠
+            document.querySelectorAll('.course-description-container').forEach(container => {
+                const desc = container.querySelector('.course-description');
+                const btn = container.querySelector('.expand-btn');
+                
+                // 检查是否需要显示展开按钮
+                if (desc.scrollHeight > desc.clientHeight) {
+                    btn.style.display = 'inline';
+                    btn.addEventListener('click', () => {
+                        desc.classList.toggle('expanded');
+                        btn.textContent = desc.classList.contains('expanded') ? '收起' : '展开';
+                    });
+                }
+            });
+
+            // 处理取消预约表单提交
+            document.querySelectorAll('.cancel-booking-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const notification = document.getElementById('notification');
+                    notification.textContent = '正在取消预约...';
+                    notification.style.opacity = '1';
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            notification.textContent = '已取消课程预约';
+                            notification.style.backgroundColor = 'rgba(46, 204, 113, 0.8)';
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            notification.textContent = data.message || '取消预约失败';
+                            notification.style.backgroundColor = 'rgba(231, 76, 60, 0.8)';
+                        }
+                        setTimeout(() => {
+                            notification.style.opacity = '0';
+                        }, 3000);
+                    })
+                    .catch(error => {
+                        notification.textContent = '网络错误，请重试';
+                        notification.style.backgroundColor = 'rgba(231, 76, 60, 0.8)';
+                        setTimeout(() => {
+                            notification.style.opacity = '0';
+                        }, 3000);
+                    });
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="notification" class="btn btn-danger" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; opacity: 0; transition: opacity 0.3s ease; padding: 12px 24px;"></div>
+    <div class="container">
+        <div class="header">
+            <h2 class="page-title">我的预约</h2>
+            <div>
+                <a href="{{ url_for('history_bookings') }}" class="nav-link">历史预约</a>
+                <a href="{{ url_for('courses') }}" class="nav-link">返回课程列表</a>
+                <a href="{{ url_for('home') }}" class="nav-link">返回首页</a>
+            </div>
+        </div>
+        
+        {% if bookings %}
+            {% for booking in bookings %}
+            <div class="booking-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 class="booking-title">{{ booking.course.name }}</h3>
+                    <div style="padding: 5px 10px; border-radius: 12px; font-size: 0.8em; 
+                        {% if booking.course.is_deleted %}background-color: rgba(231, 76, 60, 0.2); color: #e74c3c;
+                        {% elif booking.course.status == 'ongoing' %}background-color: rgba(241, 196, 15, 0.2); color: #f1c40f;
+                        {% elif booking.course.status == 'expired' %}background-color: rgba(231, 76, 60, 0.2); color: #e74c3c;
+                        {% else %}background-color: rgba(46, 204, 113, 0.2); color: #2ecc71;{% endif %}">
+                        {% if booking.course.is_deleted %}被管理员删除
+                        {% elif booking.course.status == 'ongoing' %}进行中
+                        {% elif booking.course.status == 'expired' %}已过期
+                        {% else %}未开始{% endif %}
+                    </div>
+                </div>
+                
+                <div class="booking-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">教练:</span>
+                        <span class="meta-value">{{ booking.course.instructor }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">时间:</span>
+                        <span class="meta-value">{{ booking.course.schedule.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">时长:</span>
+                        <span class="meta-value">{{ booking.course.duration }}分钟</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">预约时间:</span>
+                        <span class="meta-value">{{ booking.booking_time.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                </div>
+                
+                <div class="course-description-container">
+                    <p class="course-description">{{ booking.course.description }}</p>
+                    <button class="expand-btn" style="display:none">展开</button>
+                </div>
+                
+                <div class="booking-actions">
+                    <form class="cancel-booking-form" action="{{ url_for('cancel_booking', booking_id=booking.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger">取消预约</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-bookings">
+                <p>您还没有预约任何课程</p>
+                <a href="{{ url_for('courses') }}" class="btn btn-primary">去预约课程</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

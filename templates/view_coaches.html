@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教练列表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 95%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 2em;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .coach-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .coach-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .coach-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .coach-image {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: block;
+        }
+
+        .coach-name {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .coach-specialty {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .coach-description {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 24px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            font-size: 1em;
+        }
+
+        .btn-primary {
+            background: rgba(46, 204, 113, 0.8);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: rgba(39, 174, 96, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-follow {
+            padding: 5px 15px;
+            border-radius: 15px;
+            background: rgba(46, 204, 113, 0.8);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .btn-follow:hover {
+            background: rgba(39, 174, 96, 0.9);
+        }
+
+        .btn-follow.following {
+            background: rgba(155, 155, 155, 0.8);
+        }
+    </style>
+    <style>
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            margin: 5% auto;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 800px;
+            color: white;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
+        .modal-image {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: block;
+        }
+
+        .modal-name {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .modal-specialty {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .modal-description {
+            line-height: 1.6;
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 10px;
+            margin-bottom: 15px;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <!-- 教练详情弹窗 -->
+    <div id="coachModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <img id="modalImage" class="modal-image" src="" alt="教练图片">
+            <h2 id="modalName" class="modal-name"></h2>
+            <p id="modalSpecialty" class="modal-specialty"></p>
+            <p id="modalDescription" class="modal-description"></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h2 class="page-title">教练列表</h2>
+            <div>
+                <a href="{{ url_for('courses') }}" class="nav-link">课程列表</a>
+                <a href="{{ url_for('view_followed_coaches') }}" class="nav-link">我的关注</a>
+                <a href="{{ url_for('home') }}" class="nav-link">返回首页</a>
+            </div>
+        </div>
+
+        <div class="coach-list">
+            {% for coach in coaches %}
+            <div class="coach-card">
+                {% if coach.image_url %}
+                <img src="{{ coach.image_url }}" alt="{{ coach.name }}" class="coach-image">
+                {% else %}
+                <img src="/static/images/coach_default.png" alt="默认教练图片" class="coach-image">
+                {% endif %}
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 class="coach-name">{{ coach.name }}</h3>
+                    <button class="btn-follow {% if coach.id in followed_coach_ids %}following{% endif %}" 
+                            data-coach-id="{{ coach.id }}" 
+                            onclick="toggleFollow(this, event)">
+                        {% if coach.id in followed_coach_ids %}已关注{% else %}关注{% endif %}
+                    </button>
+                </div>
+                <p class="coach-specialty">专长: {{ coach.specialty if coach.specialty else '暂无' }}</p>
+                <p class="coach-description">{{ coach.description if coach.description else '暂无描述' }}</p>
+                <a href="{{ url_for('courses', search=coach.name) }}" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                    查看课程
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        // 获取弹窗元素
+        const modal = document.getElementById("coachModal");
+        const closeBtn = document.querySelector(".close-btn");
+
+        // 为所有教练卡片添加点击事件（排除按钮和链接的点击）
+        document.querySelectorAll('.coach-card').forEach(card => {
+            card.addEventListener('click', function(event) {
+                // 如果点击的是按钮或链接，则不处理卡片点击
+                if (event.target.closest('button') || event.target.closest('a')) {
+                    return;
+                }
+                const imgSrc = this.querySelector('.coach-image').src;
+                const name = this.querySelector('.coach-name').textContent;
+                const specialty = this.querySelector('.coach-specialty').textContent;
+                const description = this.querySelector('.coach-description').textContent;
+
+                // 设置弹窗内容
+                document.getElementById('modalImage').src = imgSrc;
+                document.getElementById('modalName').textContent = name;
+                document.getElementById('modalSpecialty').textContent = specialty;
+                document.getElementById('modalDescription').textContent = description;
+
+                // 显示弹窗
+                modal.style.display = "block";
+            });
+        });
+
+        // 点击关闭按钮关闭弹窗
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = "none";
+        });
+
+        // 点击弹窗外部关闭弹窗
+        window.addEventListener('click', function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
+        function toggleFollow(button, event) {
+            event.stopPropagation(); // 阻止事件冒泡
+            const coachId = button.getAttribute('data-coach-id');
+            const isFollowing = button.classList.contains('following');
+            
+            // 添加加载状态
+            button.disabled = true;
+            button.textContent = '处理中...';
+            
+            fetch(`/follow/${coachId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    action: isFollowing ? 'unfollow' : 'follow'
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    if (isFollowing) {
+                        button.classList.remove('following');
+                        button.textContent = '关注';
+                    } else {
+                        button.classList.add('following');
+                        button.textContent = '已关注';
+                    }
+                    // 添加成功提示
+                    showToast(isFollowing ? '已取消关注' : '关注成功', 'success');
+                } else {
+                    showToast('操作失败: ' + (data.message || '未知错误'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('请求失败: ' + error.message, 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+            });
+        }
+
+        // 更新所有按钮的点击事件绑定
+        document.querySelectorAll('.btn-follow').forEach(button => {
+            button.addEventListener('click', function(event) {
+                toggleFollow(this, event);
+            });
+        });
+        // Toast通知函数
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }, 100);
+        }
+    </script>
+    <style>
+        /* Toast通知样式 */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            padding: 12px 24px;
+            border-radius: 4px;
+            color: white;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            text-align: center;
+            min-width: 300px;
+            max-width: 80%;
+        }
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast-notification.success {
+            background-color: #28a745;
+        }
+        .toast-notification.error {
+            background-color: #dc3545;
+        }
+    </style>
+</body>
+</html>

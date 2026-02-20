@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 健身中心</title>
+    <style>
+        /* 继承login.html的主要风格 */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* 全屏背景图 */
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            position: relative;
+            min_height: 100vh;
+        }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* 主要内容容器 */
+        .main-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            background: rgba(255, 255, 255, 0.1);
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+
+        /* 标题样式 */
+        h1 {
+            color: white;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        /* 个人信息区域 */
+        .profile-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .profile-card {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .profile-card h2 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .profile-info {
+            color: rgba(255,255,255,0.9);
+            line-height: 1.8;
+        }
+
+        /* 修改密码按钮 */
+        .change-password-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #00a8ff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .change-password-btn:hover {
+            background: #0097e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,168,255,0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <div class="top-nav">
+        <a href="{{ url_for('home') }}" class="nav-link">返回首页</a>
+        <a href="{{ url_for('logout') }}" class="nav-link">退出登录</a>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="main-container">
+        <h1>个人中心</h1>
+        
+        <div class="profile-section">
+            <div class="profile-card">
+                <h2>基本信息</h2>
+                <div class="profile-info">
+                    <p><strong>用户名：</strong> {{ user.username }}</p>
+                    <p><strong>角色：</strong> 
+                        {% if user.role == 'admin' %}
+                            管理员
+                        {% elif user.role == 'member' %}
+                            会员
+                        {% else %}
+                            普通用户
+                        {% endif %}
+                    </p>
+                    {% if user.role == 'member' and user.membership_expiry %}
+                        <p><strong>会员到期：</strong> {{ user.membership_expiry.strftime('%Y-%m-%d') }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <h2>账户安全</h2>
+                <div class="profile-info">
+                    <p>上次修改时间：{{ user.last_modified.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <a href="{{ url_for('reset_password') }}" class="change-password-btn">修改密码</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

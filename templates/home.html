@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 健身中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        /* 体测报告样式 */
+        .report-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 20px;
+            width: 100%;
+        }
+        
+        .report-table {
+            flex: 1;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(15px);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .report-table h3 {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        th {
+            font-weight: bold;
+        }
+        
+        .update-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        
+        .update-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .checkmark {
+            color: #28a745;
+            margin-left: 5px;
+            font-size: 1.2em;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            position: relative;
+            padding-bottom: 50px;
+        }
+
+        .main-content {
+            min-height: calc(100vh - 100px);
+            padding: 20px 0;
+        }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* 主要内容 */
+        .main-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            width: 90%;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #00a8ff;
+            color: white;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .btn:hover {
+            background: #0097e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,168,255,0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="top-nav">
+        <a href="{{ url_for('userpage') }}" class="nav-link">个人中心</a>
+        <a href="{{ url_for('my_bookings') }}" class="nav-link">我的预约</a>
+        <a href="{{ url_for('view_followed_coaches') }}" class="nav-link">关注教练</a>
+        <a href="{{ url_for('courses') }}" class="nav-link">预约课程</a>
+        <a href="{{ url_for('logout') }}" class="nav-link">退出登录</a>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="main-content">
+        <h1>欢迎回来，{% if user.membership_expiry and user.membership_expiry > current_time %}会员{% endif %}{{ user.username }}！</h1>
+        <p>开始您的健身之旅，记录您的训练数据，查看您的健身进度</p>
+        
+        <!-- 体测报告表格 -->
+        <div class="report-container">
+            <div class="report-table">
+                <h3>目标数据</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>项目</th>
+                            <th>目标值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>身高</td>
+                            <td>{{ goal_data.min_height }} - {{ goal_data.max_height }} cm</td>
+                        </tr>
+                        <tr>
+                            <td>体重</td>
+                            <td>{{ goal_data.min_weight }} - {{ goal_data.max_weight }} kg</td>
+                        </tr>
+                        <tr>
+                            <td>体脂率</td>
+                            <td>{{ goal_data.min_body_fat }} - {{ goal_data.max_body_fat }} %</td>
+                        </tr>
+                        <tr>
+                            <td>肌肉量</td>
+                            <td>{{ goal_data.min_muscle_mass }} - {{ goal_data.max_muscle_mass }} kg</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <a href="{{ url_for('update_goal') }}" class="update-btn">更新目标</a>
+            </div>
+            
+            <div class="report-table">
+                <h3>最近数据</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>项目</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>身高</td>
+                            <td>
+                                {{ latest_data.height }} cm
+                                {% if latest_data.height and latest_data.height != '--' and goal_data %}
+                                    {% set height_value = latest_data.height|float %}
+                                    {% set min_height = goal_data.min_height|float %}
+                                    {% set max_height = goal_data.max_height|float %}
+                                    {% if min_height <= height_value <= max_height %}
+                                <span class="checkmark">✓</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>体重</td>
+                            <td>
+                                {{ latest_data.weight }} kg
+                                {% if latest_data.weight and latest_data.weight != '--' and goal_data %}
+                                    {% set weight_value = latest_data.weight|float %}
+                                    {% set min_weight = goal_data.min_weight|float %}
+                                    {% set max_weight = goal_data.max_weight|float %}
+                                    {% if min_weight <= weight_value <= max_weight %}
+                                <span class="checkmark">✓</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>体脂率</td>
+                            <td>
+                                {{ latest_data.body_fat }} %
+                                {% if latest_data.body_fat and latest_data.body_fat != '--' and goal_data %}
+                                    {% set body_fat_value = latest_data.body_fat|float %}
+                                    {% set min_body_fat = goal_data.min_body_fat|float %}
+                                    {% set max_body_fat = goal_data.max_body_fat|float %}
+                                    {% if min_body_fat <= body_fat_value <= max_body_fat %}
+                                <span class="checkmark">✓</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>肌肉量</td>
+                            <td>
+                                {{ latest_data.muscle_mass }} kg
+                                {% if latest_data.muscle_mass and latest_data.muscle_mass != '--' and goal_data %}
+                                    {% set muscle_mass_value = latest_data.muscle_mass|float %}
+                                    {% set min_muscle_mass = goal_data.min_muscle_mass|float %}
+                                    {% set max_muscle_mass = goal_data.max_muscle_mass|float %}
+                                    {% if min_muscle_mass <= muscle_mass_value <= max_muscle_mass %}
+                                <span class="checkmark">✓</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <a href="{{ url_for('update_measurement', type='latest') }}" class="update-btn">更新数据</a>
+            </div>
+            
+            <div class="report-table">
+                <h3>最初数据</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>项目</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>身高</td>
+                            <td>{{ initial_data.height }} cm</td>
+                        </tr>
+                        <tr>
+                            <td>体重</td>
+                            <td>{{ initial_data.weight }} kg</td>
+                        </tr>
+                        <tr>
+                            <td>体脂率</td>
+                            <td>{{ initial_data.body_fat }} %</td>
+                        </tr>
+                        <tr>
+                            <td>肌肉量</td>
+                            <td>{{ initial_data.muscle_mass }} kg</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <a href="{{ url_for('update_measurement', type='initial') }}" class="update-btn">更新数据</a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin: 50px 0;">
+            <a href="{{ url_for('qualification') }}" class="btn" style="width: 200px;">本店资质</a>
+        </div>
+    </div>
+</body>
+</html>
+
+

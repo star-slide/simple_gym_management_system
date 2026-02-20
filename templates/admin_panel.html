@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员控制面板 - 用户权限管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            min-height: 100vh;
+            color: white;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .admin-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .admin-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .security-notice {
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 3px solid #e74c3c;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        .audit-log {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .audit-log h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        .user-table-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+        }
+        /* 安全增强样式 */
+        .role-change-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #fff8d1;
+            border: 1px solid #ffe564;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        .flash-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .flash-danger {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .role-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .role-select {
+            padding: 6px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background-color: white;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-icon:hover {
+            opacity: 0.8;
+        }
+
+        .btn-icon img {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 二次确认弹窗（带取消按钮） -->
+    <div id="confirmModal" class="modal" style="display: none; position: fixed; z-index: 1100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7);">
+        <div style="background-color: rgba(255,255,255,0.1); margin: 15% auto; padding: 30px; border-radius: 12px; width: 500px; max-width: 90%; backdrop-filter: blur(10px);">
+            <h3 style="color: white; margin-bottom: 20px;" id="confirmTitle">确认操作</h3>
+            <p style="color: rgba(255,255,255,0.8); margin-bottom: 30px;" id="confirmMessage"></p>
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <button onclick="hideConfirmModal(false)" class="btn btn-secondary" style="padding: 10px 20px;">取消</button>
+                <button onclick="hideConfirmModal(true)" class="btn btn-danger" style="padding: 10px 20px;">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作结果反馈弹窗（仅确认按钮） -->
+    <div id="resultModal" class="modal" style="display: none; position: fixed; z-index: 1100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7);">
+        <div style="background-color: rgba(255,255,255,0.1); margin: 15% auto; padding: 30px; border-radius: 12px; width: 500px; max-width: 90%; backdrop-filter: blur(10px);">
+            <h3 style="color: white; margin-bottom: 20px;" id="resultTitle">操作结果</h3>
+            <p style="color: rgba(255,255,255,0.8); margin-bottom: 30px;" id="resultMessage"></p>
+            <div style="display: flex; justify-content: center;">
+                <button onclick="hideResultModal()" class="btn btn-primary" style="padding: 10px 20px;">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>用户权限管理系统</h1>
+            <a href="{{ url_for('dashboard') }}" class="btn-back" style="
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                padding: 8px 16px;
+                background: #00a8ff;
+                color: white;
+                border-radius: 4px;
+                text-decoration: none;
+                font-weight: bold;
+            ">
+                返回控制台
+            </a>
+        </div>
+        <div class="security-notice">
+            <strong>安全操作提示：</strong>
+            请注意权限变更将直接影响系统安全，操作前请确认用户身份
+        </div>
+
+        <!-- 操作记录显示区 -->
+        <div class="audit-log">
+            <h3>最近操作记录</h3>
+            <ul>
+                {% for log in latest_audit_logs %}
+                <li>{{ log.timestamp }} - {{ log.action }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- 用户权限表格 -->
+        <div class="user-table-container">
+            <div class="search-bar" style="margin-bottom: 20px;">
+                <input type="text" id="userSearch" placeholder="搜索用户名..." 
+                       style="padding: 8px; width: 300px; border: 1px solid #ddd; border-radius: 4px;">
+                <button onclick="searchUsers()" 
+                        style="padding: 8px 16px; background: #00a8ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    搜索
+                </button>
+            </div>
+            <table class="security-table" id="userTable">
+                <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>当前角色</th>
+                        <th>最后修改时间</th>
+                        <th>操作人</th>
+                        <th>权限管理</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td class="role-tag role-{{ user.role }}">
+                            {{ user.role | upper }}
+                            {% if user.role == 'member' and user.membership_expiry %}
+                                <br><small>到期: {{ user.membership_expiry.strftime('%Y-%m-%d') }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.last_modified.strftime('%Y-%m-%d %H:%M') if user.last_modified else 'N/A' }}</td>
+                        <td>
+                            {% if user.modified_by %}
+                                {{ User.query.get(user.modified_by).username }}
+                            {% else %}
+                                系统初始化
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form class="role-form" method="POST" action="{{ url_for('edit_account') }}" data-user-id="{{ user.id }}">
+                                <!-- CSRF 令牌 -->
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                
+                                 <!-- 安全增强：二次用户 ID 验证 -->
+                                 <input type="hidden" name="secure_user_id" 
+                                 value="{{ user.id }}">
+                          
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                
+                                <select name="new_role" 
+                                        class="role-select security-select"
+                                        {% if user.id == session.user_id %}disabled{% endif %}
+                                        onchange="toggleMembershipDays(this)">
+                                    <option value="user" 
+                                            {% if user.role == 'user' %}selected{% endif %}
+                                            {% if not is_super_admin and user.role == 'admin' %}disabled{% endif %}>
+                                        普通用户
+                                    </option>
+                                    <option value="member" 
+                                            {% if user.role == 'member' %}selected{% endif %}>
+                                        会员
+                                    </option>
+                                    <option value="admin" 
+                                            {% if user.role == 'admin' %}selected{% endif %}
+                                            {% if not is_super_admin %}disabled{% endif %}>
+                                        管理员
+                                    </option>
+                                </select>
+                                
+                                <div class="membership-days" style="display: {% if user.role == 'member' %}flex{% else %}none{% endif %}; align-items: center; gap: 8px;">
+                                    <input type="number" name="membership_days" min="1" max="365" 
+                                           placeholder="天数" class="days-input"
+                                           value="{% if user.role == 'member' %}30{% endif %}">
+                                    <span>天</span>
+                                </div>
+                                
+                                <button type="submit" 
+                                        class="security-btn text-btn"
+                                        {% if user.id == session.user_id %}disabled{% endif %}>
+                                    保存设置
+                                </button>
+
+                                <!-- 新增密码初始化按钮 -->
+                                <button type="button" 
+                                        class="reset-pwd-btn text-btn"
+                                        onclick="initPassword('{{ user.id }}')"
+                                        {% if user.id == session.user_id %}disabled{% endif %}>
+                                    重置密码
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 动态安全提示 -->
+        <div id="roleChangeAlert" class="role-change-alert">
+            <span class="alert-icon">⚠️</span>
+            <span class="alert-text"></span>
+        </div>
+
+        <!-- 即时反馈消息 -->
+        <div class="flash-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if message != '缺少必要参数' or request.method == 'POST' %}
+                            <div class="flash-{{ category }} animated fadeIn">
+                                {{ message }}
+                                <span class="close-btn" onclick="this.parentElement.remove()">×</span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <script>
+        // 增强的安全验证
+        let confirmCallback = null;
+        
+        function showConfirmModal(title, message, callback) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmModal').style.display = 'block';
+            confirmCallback = callback;
+        }
+        
+        function hideConfirmModal(result) {
+            document.getElementById('confirmModal').style.display = 'none';
+            if (confirmCallback) {
+                confirmCallback(result);
+                confirmCallback = null;
+            }
+        }
+        
+        function confirmRoleChange(form) {
+            const select = form.querySelector('select');
+            const currentRole = '{{ current_user.role }}';
+            const newRole = select.value;
+
+            // 管理员权限验证
+            if (newRole === 'admin' && !{{ 'true' if is_super_admin else 'false' }}) {
+                showAlert('缺少必要参数', 'danger');
+                return false;
+            }
+
+            // 自我权限修改验证
+            if (form.dataset.userId === '{{ session.user_id }}') {
+                showAlert('缺少必要参数', 'danger');
+                return false;
+            }
+
+            showAlert(`确认将用户权限从 ${currentRole} 修改为 ${newRole} 吗？`, 'warning');
+            
+            return new Promise((resolve) => {
+                showConfirmModal(
+                    '确认操作', 
+                    '确认执行此安全敏感操作吗？',
+                    (confirmed) => {
+                        if (confirmed) {
+                            form.submit();
+                        }
+                        resolve(confirmed);
+                    }
+                );
+            });
+        }
+
+        function showAlert(text, type) {
+            const alertBox = document.getElementById('roleChangeAlert');
+            alertBox.querySelector('.alert-text').textContent = text;
+            alertBox.style.display = 'block';
+            alertBox.className = `role-change-alert alert-${type}`;
+            
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 3000);
+        }
+
+        // 动态按钮交互
+        document.querySelectorAll('.security-btn img').forEach(img => {
+            img.addEventListener('mouseover', function() {
+                this.src = this.dataset.hover;
+            });
+            
+            img.addEventListener('mouseout', function() {
+                this.src = this.src.replace('-active.png', '.png');
+            });
+        });
+
+        // 即时消息自动关闭
+        setTimeout(() => {
+            document.querySelectorAll('.flash-message').forEach(msg => {
+                msg.remove();
+            });
+        }, 5000);
+
+        // 切换会员天数输入框显示
+        function toggleMembershipDays(select) {
+            const daysDiv = select.closest('.role-form').querySelector('.membership-days');
+            daysDiv.style.display = select.value === 'member' ? 'flex' : 'none';
+        }
+
+        // 结果反馈弹窗函数
+        function showResultModal(title, message) {
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultMessage').textContent = message;
+            document.getElementById('resultModal').style.display = 'block';
+        }
+        
+        function hideResultModal() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+
+        // 密码初始化功能
+        function initPassword(userId) {
+            showConfirmModal(
+                '重置密码', 
+                '确定要将用户密码重置为默认值吗？',
+                (confirmed) => {
+                    if (!confirmed) return;
+
+                    fetch('{{ url_for("admin_api_reset_password") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            new_password: 'Password00'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showAlert('操作成功', 'success');
+                            showResultModal(
+                                '操作完成',
+                                '密码已成功重置为默认值: Password00'
+                            );
+                        } else {
+                            showAlert('操作失败', 'danger');
+                            showResultModal(
+                                '操作失败',
+                                '密码重置失败: ' + (data.message || '未知错误')
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        showAlert('操作异常', 'danger');
+                        showResultModal(
+                            '操作异常',
+                            '密码重置过程中发生错误: ' + error.message
+                        );
+                    });
+                }
+            );
+        }
+    </script>
+    <script>
+        function searchUsers() {
+            const input = document.getElementById('userSearch');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('userTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const usernameCell = rows[i].getElementsByTagName('td')[0];
+                if (usernameCell) {
+                    const username = usernameCell.textContent || usernameCell.innerText;
+                    if (username.toUpperCase().indexOf(filter) > -1) {
+                        rows[i].style.display = '';
+                    } else {
+                        rows[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // 支持按回车键搜索
+        document.getElementById('userSearch').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                searchUsers();
+            }
+        });
+    </script>
+</body>
+</html>

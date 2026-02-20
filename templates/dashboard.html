@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员界面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .welcome-message {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .role-status {
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 24px;
+            font-weight: 500;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-badge {
+            background: rgba(231, 76, 60, 0.8);
+        }
+
+
+
+        .function-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .nav-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .admin-features {
+            border-left: 4px solid rgba(231, 76, 60, 0.8);
+        }
+
+
+
+        .expiry-date {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .inline-form {
+            display: inline;
+        }
+
+        .form-link, .logout-btn {
+            background: rgba(46, 204, 113, 0.8);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            padding: 10px 20px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-link:hover, .logout-btn:hover {
+            background: rgba(39, 174, 96, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .logout-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(231, 76, 60, 0.9);
+            padding: 15px 0;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .logout-btn {
+            background: transparent;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px 30px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-card h3 {
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .nav-card p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+        }
+
+        .nav-card a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-card a:hover {
+            color: #2ecc71;
+        }
+        }
+
+        .nav-card-content {
+            flex: 1;
+        }
+
+        .nav-card-actions {
+            margin-top: auto;
+            padding-top: 15px;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+    </style>
+    <style>
+        .full-course-list {
+            grid-column: 1 / -1;
+        }
+        
+        .course-list-container {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .course-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0,0,0,0.2);
+        }
+        
+        .course-table th,
+        .course-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .course-table th {
+            background: rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+        }
+        
+        .course-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .course-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #00a8ff;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .course-summary {
+            margin-top: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .mini-course {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .mini-course:last-child {
+            border-bottom: none;
+        }
+        
+        .mini-course small {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .no-courses {
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            padding: 10px 0;
+        }
+        @media (max-width: 768px) {
+            .function-nav {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-container {
+                padding: 20px;
+            }
+            
+            .welcome-message {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1 class="welcome-message">欢迎回来，{{ user.username }}！</h1>
+            <div class="role-status">
+                <span class="role-badge admin-badge">系统管理员</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn" style="margin-left: 20px;">
+                    安全退出
+                </a>
+            </div>
+        </div>
+        <div class="function-nav">
+            <div class="nav-card">
+                <div class="nav-card-content">
+                    <h3>添加课程</h3>
+                    <p>添加或者修改课程信息</p>
+                </div>
+                <div class="nav-card-actions">
+                    <a href="{{ url_for('add_course') }}" class="form-link">进入设置</a>
+                </div>
+            </div>
+
+            <div class="nav-card">
+                <div class="nav-card-content">
+                    <h3>用户资料</h3>
+                    <p>查看和修改所有账户信息</p>
+                </div>
+                <div class="nav-card-actions">
+                    <form action="{{ url_for('edit_account') }}" method="POST" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="form-link">进入→</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="nav-card">
+                <div class="nav-card-content">
+                    <h3>课程管理</h3>
+                    <p>查看系统中的所有课程</p>
+                </div>
+                <div class="nav-card-actions">
+                    <a href="{{ url_for('courses') }}" class="form-link">查看所有课程 →</a>
+                </div>
+            </div>
+
+            <div class="nav-card">
+                <div class="nav-card-content">
+                    <h3>教练管理</h3>
+                    <p>管理系统中的教练信息</p>
+                </div>
+                <div class="nav-card-actions">
+                    <a href="{{ url_for('admin_coaches') }}" class="form-link">进入管理 →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

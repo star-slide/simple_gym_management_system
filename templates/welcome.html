@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
+    <title>健身中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        html {
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+        
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pages-container {
+            position: relative;
+            min-height: 100vh;
+            overflow: visible;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            min-height: 100vh;
+            opacity: 0;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.6s linear;
+            overflow: hidden;
+            transform: translateY(100%);
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            background-color: #000;
+            z-index: 1;
+        }
+
+        .page::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            background: none;
+            pointer-events: none;
+        }
+
+        .page-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 3;
+        }
+
+        .site-title {
+            position: absolute;
+            color: white;
+            z-index: 3;
+            transition: all 1s ease;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+
+        #page1 .site-title {
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            width: 100%;
+            text-align: center;
+        }
+
+        .page:not(#page1) .site-title {
+            top: 20px;
+            left: 30px;
+            font-size: 1.8rem;
+            transform: scale(0.9);
+        }
+
+        .description {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            z-index: 3;
+            width: 80%;
+            max-width: 800px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+        }
+
+        .auth-container {
+            position: absolute;
+            z-index: 999;
+            transition: all 1s ease;
+        }
+
+        #page1 .auth-container {
+            top: 60%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .page:not(#page1) .auth-container {
+            top: 20px;
+            right: 30px;
+        }
+
+        .auth-btn {
+            padding: 12px 30px;
+            margin: 8px;
+            border: 2px solid #fff;
+            border-radius: 30px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            z-index: 1;
+        }
+
+        .auth-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.05);
+        }
+
+        .auth-btn:active {
+            transform: scale(0.95);
+            transition: all 0.1s;
+        }
+
+        .content {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 800px;
+            color: white;
+            text-align: center;
+            z-index: 3;
+            padding: 20px;
+        }
+
+        .page:not(#page1) .content {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: left;
+            padding: 40px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+        }
+
+        .pagination-dots {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 4;
+        }
+
+        .dot {
+            display: block;
+            width: 12px;
+            height: 12px;
+            margin: 10px 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.6);
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            transform: scale(1.4);
+            background: white;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, 0); opacity: 0.8; }
+            50% { transform: translate(-50%, 15px); opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+    <div class="pages-container">
+        <!-- 主页面 -->
+        <div id="page1" class="page">
+            <div class="page-bg" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/static/images/p1 (1).jpg') center/cover"></div>
+            <h1 class="site-title">健身中心</h1>
+            <div class="description">
+                <p>专业健身团队｜顶尖设施设备｜科学训练体系</p>
+                <p>营业时间：每日 6:00 - 24:00</p>
+            </div>
+            <div class="auth-container">
+                <button class="auth-btn" onclick="showLogin()">登录</button>
+                <button class="auth-btn" onclick="showRegister()">注册新账号</button>
+            </div>
+        </div>
+
+        <!-- 其他页面（保持原有结构） -->
+        <div id="page2" class="page" style="background: url('/static/images/p1 (2).jpg') center/cover">
+            <h1 class="site-title">健身中心</h1>
+            <div class="auth-container">
+                <button class="auth-btn" onclick="showLogin()">登录</button>
+                <button class="auth-btn" onclick="showRegister()">注册</button>
+            </div>
+            <div class="content">
+                <h2>专业设施</h2>
+                <p>配备国际顶级健身器材，包含有氧区、力量区、功能训练区等专业分区，满足各种健身需求。</p>
+            </div>
+        </div>
+    
+        <div id="page3" class="page" style="background: url('/static/images/p1 (3).jpg') center/cover">
+            <h1 class="site-title">健身中心</h1>
+            <div class="auth-container">
+                <button class="auth-btn" onclick="showLogin()">登录</button>
+                <button class="auth-btn" onclick="showRegister()">注册</button>
+            </div>
+            <div class="content">
+                <h2>私教团队</h2>
+                <p>国家认证专业教练团队，提供一对一针对性指导，制定个性化健身计划。</p>
+            </div>
+        </div>
+    
+        <div id="page4" class="page" style="background: url('/static/images/p1 (4).jpg') center/cover">
+            <h1 class="site-title">健身中心</h1>
+            <div class="auth-container">
+                <button class="auth-btn" onclick="showLogin()">登录</button>
+                <button class="auth-btn" onclick="showRegister()">注册</button>
+            </div>
+            <div class="content">
+                <h2>特色课程</h2>
+                <p>每日开设瑜伽、普拉提、动感单车等团体课程，丰富您的健身选择。</p>
+            </div>
+        </div>
+    
+        <div id="page5" class="page" style="background: url('/static/images/p1 (5).jpg') center/cover">
+            <h1 class="site-title">健身中心</h1>
+            <div class="auth-container">
+                <button class="auth-btn" onclick="showLogin()">登录</button>
+                <button class="auth-btn" onclick="showRegister()">注册</button>
+            </div>
+            <div class="content">
+                <h2>会员权益</h2>
+                <p>尊享会员专属储物柜、免费体测服务、健身计划制定等多重特权。</p>
+            </div>
+        </div>
+    </div>
+    
+
+        <!-- 分页指示器 -->
+        <div class="pagination-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 0;
+        let isAnimating = false;
+        const pages = document.querySelectorAll('.page');
+        const dots = document.querySelectorAll('.dot');
+        let lastWheelTime = 0;
+        let touchStartY = 0;
+        let touchDistance = 0;
+        const wheelThreshold = 60;
+        const touchThreshold = 80;
+        const animationDuration = 600;
+
+        // 初始化页面
+        function initPages() {
+            pages.forEach((page, index) => {
+                page.style.zIndex = index === 0 ? 1 : -1;
+                page.style.transform = index === 0 ? "translateY(0)" : "translateY(100%)";
+                page.style.opacity = index === 0 ? 1 : 0;
+            });
+            updateDots();
+            createArrowPrompt();
+        }
+
+        // 创建下箭头提示
+        function createArrowPrompt() {
+            const arrow = document.createElement('div');
+            arrow.innerHTML = '↓';
+            arrow.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translate(-50%, 0);
+                font-size: 40px;
+                color: rgba(255,255,255,0.8);
+                animation: float 2s infinite;
+                z-index: 5;
+                pointer-events: none;
+            `;
+            document.body.appendChild(arrow);
+            setTimeout(() => arrow.remove(), 10000);
+        }
+
+        // 更新导航点
+        function updateDots() {
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentPage);
+            });
+        }
+
+        // 翻页控制
+        function changePage(direction) {
+            if (isAnimating) return;
+            
+            const now = Date.now();
+            if (now - lastWheelTime < 800) return;
+            lastWheelTime = now;
+
+            const newPage = direction === 'down' ? currentPage + 1 : currentPage - 1;
+            
+            // 边界检测
+            if (newPage < 0 || newPage >= pages.length) {
+                pages[currentPage].style.transform = 
+                    `translateY(${direction === 'down' ? '-10px' : '10px'})`;
+                if (navigator.vibrate) navigator.vibrate(50);
+                setTimeout(() => {
+                    pages[currentPage].style.transform = "translateY(0)";
+                }, 300);
+                return;
+            }
+
+            isAnimating = true;
+
+            pages[currentPage].style.transform = 
+                direction === 'down' ? "translateY(-100%)" : "translateY(100%)";
+            pages[currentPage].style.opacity = 0;
+
+            pages[newPage].style.transform = "translateY(0)";
+            pages[newPage].style.opacity = 1;
+            pages[newPage].style.zIndex = 2;
+
+            currentPage = newPage;
+
+            setTimeout(() => {
+                pages.forEach((page, index) => {
+                    if(index !== currentPage) {
+                        page.style.zIndex = index === 0 ? 1 : -1;
+                        page.style.transform = 
+                            index < currentPage ? "translateY(-100%)" : "translateY(100%)";
+                    }
+                });
+                isAnimating = false;
+                updateDots();
+            }, animationDuration);
+        }
+
+        // 事件处理
+        function handleScroll(e) {
+            if (isAnimating) return;
+            e.preventDefault();
+            if (Math.abs(e.deltaY) < wheelThreshold) return;
+            changePage(e.deltaY > 0 ? 'down' : 'up');
+        }
+
+        function handleTouchStart(e) {
+            touchStartY = e.touches[0].clientY;
+            touchDistance = 0;
+        }
+
+        function handleTouchMove(e) {
+            if (isAnimating) return;
+            const currentY = e.touches[0].clientY;
+            touchDistance = touchStartY - currentY;
+            
+            if (touchDistance > 0 && currentPage < pages.length - 1) {
+                pages[currentPage].style.transform = 
+                    `translateY(-${Math.min(10, touchDistance/8)}%)`;
+            } else if (touchDistance < 0 && currentPage > 0) {
+                pages[currentPage].style.transform = 
+                    `translateY(${Math.min(10, -touchDistance/8)}%)`;
+            }
+        }
+
+        function handleTouchEnd() {
+            if (Math.abs(touchDistance) < touchThreshold) {
+                pages[currentPage].style.transform = "translateY(0)";
+                return;
+            }
+            changePage(touchDistance > 0 ? 'down' : 'up');
+            touchDistance = 0;
+        }
+
+        // 页面跳转
+        function showLogin() {
+            window.location.href = "{{ url_for('login') }}";
+        }
+        
+        function showRegister() {
+            window.location.href = "{{ url_for('register') }}";
+        }
+
+        // 标题点击返回
+        document.querySelectorAll('.site-title').forEach(title => {
+            title.addEventListener('click', () => {
+                window.location.href = "{{ url_for('welcome') }}";
+            });
+        });
+
+        // 增强初始化函数
+        function enhancedInit() {
+            // 确保状态重置
+            currentPage = 0;
+            isAnimating = false;
+            
+            // 执行原有初始化
+            initPages();
+            
+            // 强制同步状态恢复
+            function restoreFirstPage() {
+                console.log('强制执行第一页恢复...');
+                
+                // 立即停止所有动画
+                isAnimating = false;
+                
+                // 同步执行DOM操作
+                const originalTransitions = [];
+                pages.forEach((page, i) => {
+                    // 保存原始transition
+                    originalTransitions[i] = window.getComputedStyle(page).transition;
+                    // 强制清除transition
+                    page.style.transition = 'none !important';
+                    
+                    if(i === 0) {
+                        // 强制显示第一页
+                        page.style.display = 'block';
+                        page.style.opacity = '1';
+                        page.style.transform = 'translateY(0)';
+                        page.style.zIndex = '9999';
+                    } else {
+                        // 强制隐藏其他页
+                        page.style.display = 'none';
+                        page.style.opacity = '0';
+                        page.style.transform = 'translateY(100%)';
+                        page.style.zIndex = '-1';
+                    }
+                });
+                
+                // 强制重绘
+                pages[0].offsetHeight;
+                
+                // 恢复currentPage状态
+                currentPage = 0;
+                updateDots();
+                
+                // 恢复transition
+                setTimeout(() => {
+                    pages.forEach((page, i) => {
+                        page.style.transition = originalTransitions[i];
+                        page.style.display = 'block';
+                    });
+                    console.log('第一页恢复验证完成');
+                    
+                    // 最终验证
+                    if(!pages[0].classList.contains('active')) {
+                        pages[0].classList.add('active');
+                    }
+                }, 50);
+            }
+
+            // 状态监控机制(1秒间隔)
+            const checkInterval = setInterval(() => {
+                if (!pages[0].classList.contains('active') && 
+                    document.visibilityState === 'visible') {
+                    restoreFirstPage();
+                }
+            }, 1000);
+            
+            // 立即响应页面可见性变化
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && 
+                    !pages[0].classList.contains('active')) {
+                    restoreFirstPage();
+                }
+            });
+            
+            // 页面卸载时清除定时器
+            window.addEventListener('beforeunload', () => {
+                clearInterval(checkInterval);
+            });
+        }
+
+        // 处理页面加载
+        function handleLoad() {
+            if (document.readyState === 'complete') {
+                enhancedInit();
+            } else {
+                document.addEventListener('DOMContentLoaded', enhancedInit);
+            }
+            
+            // 处理浏览器缓存恢复
+            window.addEventListener('pageshow', (event) => {
+                if (event.persisted) {
+                    enhancedInit();
+                }
+            });
+        }
+
+        // 事件监听
+        handleLoad();
+        window.addEventListener('wheel', handleScroll, { passive: false });
+        window.addEventListener('touchstart', handleTouchStart, { passive: false });
+        window.addEventListener('touchmove', handleTouchMove, { passive: false });
+        window.addEventListener('touchend', handleTouchEnd);
+    </script>
+</body>
+</html>

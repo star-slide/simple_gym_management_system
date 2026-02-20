@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册 - 健身中心</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                        url('/static/images/login.webp') center/cover;
+            position: relative;webp  }
+
+        .form-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* Internet Explorer and Edge */
+            scrollbar-gutter: stable; /* Modern browsers */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+
+        h2 {
+            color: white;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #00a8ff;
+            background: rgba(255,255,255,0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #00a8ff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #0097e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,168,255,0.4);
+        }
+
+        .alert {
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px solid;
+        }
+
+        .success {
+            background: rgba(135, 218, 135, 0.9);
+            border-color: #79c079;
+        }
+
+        .danger {
+            background: rgba(255, 175, 175, 0.9);
+            border-color: #ff7979;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 25px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .links a {
+            color: #00a8ff;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+
+        .links a:hover {
+            color: #00c3ff;
+            text-shadow: 0 0 15px rgba(0, 200, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>注册</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" name="password" required>
+            </div>
+
+            <div class="form-group">
+                <label>确认密码</label>
+                <input type="password" name="confirm_password" required>
+            </div>
+
+            <button type="submit">注 册</button>
+        </form>
+
+        <div class="links">
+            <p>
+                <a href="{{ url_for('login') }}">已有账号？登录</a> |
+                <a href="{{ url_for('welcome') }}">返回主页</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

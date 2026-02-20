@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本店资质 - 健身中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            position: relative;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            margin-top: 50px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .qualification-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+
+        .qualification-item h2 {
+            margin-bottom: 10px;
+            color: #00a8ff;
+        }
+
+        .back-btn {
+            display: block;
+            width: 200px;
+            margin: 30px auto 0;
+            padding: 10px;
+            text-align: center;
+            background: #00a8ff;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #0097e6;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>本店资质证书</h1>
+        
+        <div class="qualification-item">
+            <h2>营业执照</h2>
+            <p>注册号: XXXXXXXX</p>
+            <p>经营范围: 健身服务、体育培训</p>
+            <p>有效期: 长期有效</p>
+        </div>
+        
+        <div class="qualification-item">
+            <h2>健身教练资格证书</h2>
+            <p>颁发机构: 国家体育总局</p>
+            <p>所有教练均持证上岗</p>
+        </div>
+        
+        <div class="qualification-item">
+            <h2>卫生许可证</h2>
+            <p>证号: XXXXXXXX</p>
+            <p>定期消毒，环境达标</p>
+        </div>
+        
+        <a href="{{ url_for('home') }}" class="back-btn">返回首页</a>
+    </div>
+</body>
+</html>
