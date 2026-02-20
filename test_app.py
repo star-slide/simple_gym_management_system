@@ -41,10 +41,24 @@ def test_successful_login(client):
         db.session.add(user)
         db.session.commit()
     
-    # Login
+    # First, get the login page to extract the CSRF token
+    response = client.get('/login')
+    assert response.status_code == 200
+    
+    # Extract CSRF token from the response
+    csrf_token = None
+    if b'csrf_token' in response.data:
+        # Parse the HTML to find the CSRF token value
+        import re
+        match = re.search(b'name="csrf_token"\s+type="hidden"\s+value="([^"]+)"', response.data)
+        if match:
+            csrf_token = match.group(1).decode('utf-8')
+    
+    # Login with CSRF token
     response = client.post('/login', data={
         'username': 'testuser',
-        'password': 'TestPass123'
+        'password': 'TestPass123',
+        'csrf_token': csrf_token
     }, follow_redirects=True)
     
     assert response.status_code == 200
